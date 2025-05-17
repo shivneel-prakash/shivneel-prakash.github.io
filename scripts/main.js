@@ -1,21 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // ======= THEME TOGGLE =======
-  const themeToggle = document.getElementById("themeToggle");
-  const body = document.body;
-  if (localStorage.getItem("theme") === "light") {
-    body.classList.add("light-theme");
-    themeToggle.textContent = "☀️";
-  }
-  themeToggle.addEventListener("click", function () {
-    body.classList.toggle("light-theme");
-    if (body.classList.contains("light-theme")) {
-      themeToggle.textContent = "☀️";
-      localStorage.setItem("theme", "light");
-    } else {
-      themeToggle.textContent = "🌙";
-      localStorage.setItem("theme", "dark");
-    }
-  });
+
 
   // ======= NAVBAR SCROLL EFFECT =======
   const navbar = document.querySelector('.navbar');
@@ -25,19 +9,6 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       navbar.classList.remove('scrolled');
     }
-  });
-
-  // ======= GO TO TOP BUTTON =======
-  const goTopBtn = document.getElementById("goTopBtn");
-  window.addEventListener("scroll", function () {
-    if (window.scrollY > 200) {
-      goTopBtn.style.display = "block";
-    } else {
-      goTopBtn.style.display = "none";
-    }
-  });
-  goTopBtn.addEventListener("click", function () {
-    window.scrollTo({ top: 0, behavior: "smooth" });
   });
 
   // ======= NAVBAR MOBILE TOGGLE =======
