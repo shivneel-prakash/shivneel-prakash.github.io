@@ -101,7 +101,86 @@ header {
     margin-left: 1rem;
     z-index: 20;
 }
+/* Tools Dropdown Improvements */
+.nav-links .dropdown {
+  position: relative;
+  list-style: none;
+}
 
+.nav-links .dropdown-toggle {
+  cursor: pointer;
+  user-select: none;
+}
+
+.nav-links .dropdown-menu {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 2.2em;
+  background: rgba(20,30,40,0.97);
+  border-radius: 10px;
+  box-shadow: 0 4px 24px #007cf055;
+  min-width: 240px; /* wider */
+  z-index: 200;
+  padding: 0.5em 0;
+  list-style: none; /* remove dot */
+}
+
+.nav-links .dropdown-menu li {
+  padding: 0;
+  list-style: none; /* remove dot */
+}
+
+.nav-links .dropdown-menu a {
+  display: block;
+  padding: 0.7em 1.2em;
+  color: #00ffe7;
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-links .dropdown-menu a:hover,
+.nav-links .dropdown-menu a:focus {
+  background: #007cf0;
+  color: #fff;
+}
+
+/* Show dropdown on .open class (for click/tap) */
+.nav-links .dropdown.open .dropdown-menu {
+  display: block;
+}
+
+/* Remove default bullet for dropdown parent */
+.nav-links .dropdown {
+  list-style: none;
+}
+
+/* Responsive: show dropdown as normal list on mobile */
+@media (max-width: 900px) {
+  .nav-links .dropdown-menu {
+    position: static;
+    box-shadow: none;
+    background: none;
+    min-width: 0;
+    padding: 0;
+  }
+}
+
+/* Light theme support */
+body.light-theme .nav-links .dropdown-menu {
+  background: #fff;
+  box-shadow: 0 4px 24px #007cf022;
+}
+body.light-theme .nav-links .dropdown-menu a {
+  color: #007cf0;
+}
+body.light-theme .nav-links .dropdown-menu a:hover,
+body.light-theme .nav-links .dropdown-menu a:focus {
+  background: #e0f7fa;
+  color: #007cf0;
+}
 /* ==========================================================================
    HERO SECTION
    ========================================================================== */
