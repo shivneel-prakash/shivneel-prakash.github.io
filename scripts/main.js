@@ -1,34 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
 
 
-  // ======= NAVBAR SCROLL EFFECT =======
-  const navbar = document.querySelector('.navbar');
-  window.addEventListener('scroll', function () {
-    if (window.scrollY > 10) {
-      navbar.classList.add('scrolled');
-    } else {
-      navbar.classList.remove('scrolled');
-    }
-  });
 
-  // ======= NAVBAR MOBILE TOGGLE =======
-  const navToggle = document.getElementById("navToggle");
-  const navLinks = document.getElementById("navLinks");
-  if (navToggle && navLinks) {
-    navToggle.addEventListener("click", function (e) {
-      e.stopPropagation();
-      navLinks.classList.toggle("open");
-    });
-    navLinks.querySelectorAll("a").forEach(link => {
-      link.addEventListener("click", () => navLinks.classList.remove("open"));
-    });
-    // Close nav if clicking outside
-    document.addEventListener("click", function (e) {
-      if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) {
-        navLinks.classList.remove("open");
-      }
-    });
-  }
 
   // ======= ANIMATED SUBTITLE =======
   const subtitle = document.getElementById("animatedSubtitle");
@@ -83,6 +56,22 @@ document.addEventListener("DOMContentLoaded", function () {
   const certModalClose = document.getElementById('cert-modal-close');
   const viewInModalLink = document.getElementById('viewInModalLink');
   let currentCertImgSrc = "";
+
+// Select the first certification by default
+const firstCert = document.querySelector('.certifications-list li[data-img]');
+if (firstCert && certImage && certImageViewer) {
+  // Remove 'active' from all, add to first
+  certList.forEach(li => li.classList.remove('active'));
+  firstCert.classList.add('active');
+  // Set image and show viewer (desktop)
+  certImage.src = firstCert.getAttribute('data-img');
+  certImage.alt = firstCert.querySelector('strong')?.textContent || "Certificate";
+  if (!isMobile()) {
+    certImageViewer.style.display = "flex";
+  }
+  // Set currentCertImgSrc for modal
+  currentCertImgSrc = firstCert.getAttribute('data-img');
+}
 
   function isMobile() {
     return window.innerWidth <= 900;
