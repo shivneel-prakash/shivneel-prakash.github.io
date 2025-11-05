@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
           <a href="/index.html#tools" class="dropdown-toggle">Tools ▼</a>
           <ul class="dropdown-menu">
             <li><a href="/tools/passwordgen.html">🔐 NoMore123</a></li>
+            <li><a href="/tools/trxparser.html">📊 TRX Parser</a></li>
             <!-- Add more tools here if needed -->
           </ul>
         </li>

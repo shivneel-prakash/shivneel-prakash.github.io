@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TRX File Parser | Shiva Prakash</title>
+  <link rel="stylesheet" href="../styles/style.css" />
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E%F0%9F%93%8A%3C/text%3E%3C/svg%3E">
+  <script defer src="../scripts/header.js"></script>
+  <script defer src="../scripts/footer.js"></script>
+  <script defer src="../scripts/trx-parser.js"></script>
+</head>
+<body>
+  <!-- Header injected by header.js -->
+
+  <section >
+    <h2 class="section-title" style="text-align:center;">📊 TRX File Parser</h2>
+    <p style="text-align:center;margin-bottom:1.2rem;">
+      Upload and parse Visual Studio Test Results (.trx) files to view detailed test execution information in a clean, organized format.
+    </p>
+
+    <!-- Upload Section -->
+    <div class="pwgen-container" style="margin-bottom:2rem; margin: auto;">
+      <div class="pwgen-row">
+        <label for="trx-file" style="font-weight:600;margin-bottom:0.5rem;display:block;">Choose TRX File</label>
+        <input type="file" id="trx-file" class="pwgen-output" accept=".trx" style="margin-bottom:0.5rem;">
+        <div id="file-name" style="font-style:italic;color:var(--text-secondary);margin-bottom:1rem;">No file selected</div>
+      </div>
+      <div class="pwgen-actions">
+        <button id="parse-btn" class="btn" disabled>Parse TRX File</button>
+      </div>
+      <div id="error-message" class="pwgen-error" style="display:none;"></div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results-section" style="display:none;">
+      <!-- Summary Card -->
+      <div class="glass card" style="margin-bottom:1.5rem;">
+        <h3 style="margin-bottom:1rem;">Test Run Summary</h3>
+        <div id="run-info" class="trx-info-grid"></div>
+        <div id="counters-grid" class="trx-counters-grid"></div>
+      </div>
+
+      <!-- Test Details -->
+      <div class="glass card">
+        <h3 style="margin-bottom:1rem;">Test Results</h3>
+        <div id="test-results"></div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="trx-empty-state">
+      <div style="font-size:3rem;margin-bottom:1rem;">📊</div>
+      <h3>No TRX file parsed yet</h3>
+      <p>Upload a .trx file to see the test results</p>
+    </div>
+  </section>
+
+  <!-- Footer injected by footer.js -->
+</body>
+</html>

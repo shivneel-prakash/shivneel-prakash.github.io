@@ -991,7 +991,7 @@ body:not(.light-theme) .tool-link:hover {
 }
 
 /* Output */
-.pwgen-output {
+.pwgen-output, .text-input {
   flex: 1;
   font-size: 1.2rem;
   padding: 0.6em 1em;
@@ -1005,7 +1005,7 @@ body:not(.light-theme) .tool-link:hover {
   font-family: 'Fira Mono', monospace;
   transition: border 0.2s;
 }
-.pwgen-output:focus {
+.pwgen-output:focus, .text-input:focus {
   border: 1.5px solid #00ffe7;
 }
 
@@ -1177,7 +1177,7 @@ body.light-theme .pwgen-slider-value,
 body.light-theme .pwgen-strength-label {
   color: #007cf0;
 }
-body.light-theme .pwgen-output {
+body.light-theme .pwgen-output,body.light-theme  .text-input {
   background: #f5faff;
   color: #007cf0;
   border: 1.5px solid #007cf0;
@@ -1209,7 +1209,7 @@ body.light-theme .pwgen-slider-btn:hover {
   .pwgen-slider-group {
     max-width: 100%;
   }
-  .pwgen-output {
+  .pwgen-output, .text-input {
     max-width: 100%;
     font-size: 1.05rem;
   }
@@ -1324,3 +1324,243 @@ body.light-theme .pwgen-slider-btn:hover {
 /* ==========================================================================
    PASSWORD GENERATOR STYLES END
    ========================================================================== */
+
+   /* ==========================================================================
+   TEXT COMPARE STYLES START
+   ========================================================================== */
+
+.textcompare-input-wrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  overflow-y: scroll;
+}
+
+.line-numbers {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2.2em;
+  padding: 0.6em 0.3em 0.6em 0.2em;
+  text-align: right;
+  color: #b0bec5;
+  background: transparent;
+  font-family: 'Fira Mono', monospace;
+  font-size: 1em;
+  pointer-events: none;
+  z-index: 2;
+  user-select: none;
+  line-height: 1.5;
+  white-space: pre;
+}
+
+.text-input {
+  padding-left: 2.7em !important; /* Make space for line numbers */
+  resize: vertical;
+  min-height: 8em;
+  box-sizing: border-box;
+  width: 100%;
+  font-family: 'Fira Mono', monospace;
+      max-height: 20vh;
+}
+
+body.light-theme .line-numbers {
+  color: #90a4ae;
+  border-right: 1px solid #b0bec533;
+}
+
+/* ==========================================================================
+   TRX PARSER STYLES
+   ========================================================================== */
+
+.trx-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.trx-info-item {
+  background: rgba(0,124,240,0.08);
+  padding: 0.8rem;
+  border-radius: 8px;
+  border-left: 3px solid #007cf0;
+}
+
+.trx-info-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+}
+
+.trx-info-value {
+  font-weight: 600;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.trx-counters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.trx-counter-item {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(0,255,231,0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(0,255,231,0.2);
+}
+
+.trx-counter-value {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.trx-counter-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.trx-test-item {
+  background: rgba(0,124,240,0.05);
+  border: 1px solid rgba(0,124,240,0.15);
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+}
+
+.trx-test-item:hover {
+  box-shadow: 0 4px 16px rgba(0,124,240,0.15);
+  transform: translateY(-2px);
+}
+
+.trx-test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.trx-test-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.trx-outcome {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.trx-outcome-passed {
+  background: rgba(0,255,135,0.2);
+  color: #00ff87;
+}
+
+.trx-outcome-failed {
+  background: rgba(255,77,109,0.2);
+  color: #ff4d6d;
+}
+
+.trx-outcome-inconclusive {
+  background: rgba(255,227,71,0.2);
+  color: #ffe347;
+}
+
+.trx-test-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.trx-detail-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.trx-detail-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.2rem;
+  font-weight: 500;
+}
+
+.trx-detail-value {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.trx-output-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0,124,240,0.15);
+}
+
+.trx-output-label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.trx-output-content {
+  background: rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,124,240,0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
+  color: var(--text-primary);
+}
+
+.trx-empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-secondary);
+}
+
+/* Light theme adjustments */
+body.light-theme .trx-output-content {
+  background: rgba(0,0,0,0.02);
+  border-color: rgba(0,124,240,0.1);
+}
+
+body.light-theme .trx-test-item {
+  background: rgba(0,124,240,0.03);
+  border-color: rgba(0,124,240,0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .trx-counters-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .trx-test-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .trx-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
