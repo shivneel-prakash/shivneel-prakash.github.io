@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Text Compare Tool | Shiva Prakash</title>
+  <link rel="stylesheet" href="../styles/style.css" />
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E%F0%9F%97%93%3C/text%3E%3C/svg%3E">
+  <script defer src="../scripts/header.js"></script>
+  <script defer src="../scripts/footer.js"></script>
+  <script defer src="../scripts/text-compare.js"></script>
+</head>
+<body>
+  <!-- Header injected by header.js -->
+
+<section class="glass card" >
+  <h2 class="section-title" style="text-align:center;">📝 Text Compare Tool</h2>
+  <p style="text-align:center;margin-bottom:1.2rem;">
+    Paste or type text in both boxes to see the differences highlighted.<br>
+  </p>
+  <div class="pwgen-main-flex" style="gap:2.5rem;">
+    <!-- Text A -->
+    <div class="pwgen-generator-col" style="min-width:320px;max-width:100%;">
+    <label for="textA" style="font-weight:600;text-align: center;">Text A</label>
+    <div class="textcompare-input-wrap">
+        <div id="linesA" class="line-numbers"></div>
+        <textarea id="textA" rows="14" class="text-input"></textarea>
+    </div>
+    </div>
+    <!-- Text B -->
+    <div class="pwgen-generator-col" style="min-width:320px;max-width:100%;">
+    <label for="textB" style="font-weight:600;text-align: center;">Text B</label>
+    <div class="textcompare-input-wrap">
+        <div id="linesB" class="line-numbers"></div>
+        <textarea id="textB" rows="14" class="text-input"></textarea>
+    </div>
+    </div>
+  </div>
+  <div style="text-align:center;">
+    <button class="btn" id="compareBtn" type="button">Compare</button>
+    <button class="btn" id="clearBtn" type="button" style="margin-left:1em;">Clear</button>
+  </div>
+  <div class="pwgen-main-flex" style="gap:2.5rem;">
+    <div class="pwgen-generator-col" style="min-width:320px;">
+      <div style="font-weight:600;margin-bottom:0.3em;text-align: center;">Diff A</div>
+      <div id="compareResultA" class="text-input" style="min-height:2.5em;white-space:pre-wrap;word-break:break-word;"></div>
+    </div>
+    <div class="pwgen-generator-col" style="min-width:320px;">
+      <div style="font-weight:600;margin-bottom:0.3em;text-align: center;">Diff B</div>
+      <div id="compareResultB" class="text-input" style="min-height:2.5em;white-space:pre-wrap;word-break:break-word;"></div>
+    </div>
+  </div>
+</section>
+
+  <!-- Footer injected by footer.js -->
+</body>
+</html>
