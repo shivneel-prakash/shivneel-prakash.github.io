@@ -15,6 +15,7 @@
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hidden { display: none !important; }
+        .badge { display: inline-flex; align-items: center; padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans p-6">
@@ -56,7 +57,7 @@
         </div>
     </div>
 
-    <!-- Empty State (Visible when no data) -->
+    <!-- Empty State -->
     <div id="emptyState" class="flex flex-col items-center justify-center py-20 bg-white rounded-lg shadow-sm border border-dashed border-gray-300">
         <div class="bg-blue-50 p-4 rounded-full mb-4">
             <svg class="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
@@ -68,7 +69,7 @@
         </button>
     </div>
 
-    <!-- Dashboard Content (Hidden until data is loaded) -->
+    <!-- Dashboard Content -->
     <div id="dashboardContent" class="hidden">
         
         <!-- KPI Cards -->
@@ -122,7 +123,6 @@
 
         <!-- Charts Row -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <!-- Activity Trend -->
             <div class="card">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-semibold text-gray-900">Activity Trend</h2>
@@ -137,7 +137,6 @@
                 </div>
             </div>
 
-            <!-- Actions Breakdown -->
             <div class="card flex flex-col">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Actions Breakdown</h2>
                 <div class="flex items-center justify-center flex-1">
@@ -148,9 +147,7 @@
                             <span class="text-2xl font-bold text-gray-900" id="totalActionsChart">0</span>
                         </div>
                     </div>
-                    <div class="ml-8 space-y-3" id="legendContainer">
-                        <!-- Legend generated dynamically -->
-                    </div>
+                    <div class="ml-8 space-y-3" id="legendContainer"></div>
                 </div>
             </div>
         </div>
@@ -183,6 +180,7 @@
                         <tr>
                             <th class="px-4 py-3 font-medium">Timestamp</th>
                             <th class="px-4 py-3 font-medium">User</th>
+                            <th class="px-4 py-3 font-medium">Client</th>
                             <th class="px-4 py-3 font-medium">Recipient</th>
                             <th class="px-4 py-3 font-medium">Subject</th>
                             <th class="px-4 py-3 font-medium">Policy Applied</th>
@@ -191,16 +189,12 @@
                             <th class="px-4 py-3 font-medium"></th>
                         </tr>
                     </thead>
-                    <tbody id="tableBody" class="divide-y divide-gray-100">
-                        <!-- Rows generated dynamically -->
-                    </tbody>
+                    <tbody id="tableBody" class="divide-y divide-gray-100"></tbody>
                 </table>
             </div>
             <div class="mt-4 flex justify-between items-center text-sm text-gray-500">
                 <span id="paginationInfo">Showing 0 to 0 of 0 entries</span>
-                <div class="flex gap-1" id="paginationControls">
-                    <!-- Pagination generated dynamically -->
-                </div>
+                <div class="flex gap-1" id="paginationControls"></div>
             </div>
         </div>
     </div>
@@ -241,7 +235,6 @@
                 if (startVal && endVal) {
                     dateRange.start = new Date(startVal);
                     dateRange.end = new Date(endVal);
-                    // Set end date to end of day
                     dateRange.end.setHours(23, 59, 59, 999);
                     applyFilters();
                 }
@@ -269,7 +262,6 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            // Show loading state (optional, but good UX)
             const statusDiv = document.getElementById('dataStatus');
             statusDiv.innerHTML = '<div class="loader"></div> Parsing...';
             statusDiv.classList.remove('hidden');
@@ -277,8 +269,7 @@
 
             const reader = new FileReader();
             reader.onload = (e) => {
-                const text = e.target.result;
-                parseCSV(text);
+                parseCSV(e.target.result);
             };
             reader.readAsText(file);
         }
@@ -293,30 +284,32 @@
                         allData = results.data.map(row => {
                             let logData = {};
                             try {
-                                // Parse the JSON string in the 'Logs' column
                                 logData = JSON.parse(row.Logs);
                             } catch (e) {
                                 console.error("Error parsing Logs JSON:", e);
                             }
 
-                            // Extract relevant fields
+                            // Extract from JSON
                             const utcTime = logData.UTCTime || '';
                             const userEmail = row.UserEmail || logData.EmailFrom?.Address || 'Unknown';
                             const subject = logData.Subject || 'No Subject';
                             const policy = row.PolicyTriggered || logData.PromptName || 'Unknown Policy';
                             const action = row.PolicyAction || logData.ButtonClicked || 'Unknown';
+                            const client = logData.Client || 'Unknown';
+                            const computerName = logData.ComputerName || logData.ComputerUser || 'Unknown';
+                            const typeItem = logData.TypeItem || 'Email';
                             
-                            // Determine Recipients
+                            // Recipients
                             const to = logData.EmailTo || [];
                             const cc = logData.EmailCc || [];
                             const bcc = logData.EmailBcc || [];
                             const allRecipients = [...to, ...cc, ...bcc].map(r => r.Address);
                             const recipientDisplay = allRecipients.length > 0 ? allRecipients[0] + (allRecipients.length > 1 ? ` +${allRecipients.length - 1}` : '') : 'None';
                             
-                            // Determine Status based on action
+                            // Status Logic
                             let status = 'Processed';
                             let statusColor = 'bg-gray-100 text-gray-700';
-                            if (action.toLowerCase().includes('send') || action.toLowerCase().includes('ok') || action.toLowerCase().includes('yes')) {
+                            if (action.toLowerCase().includes('send') || action.toLowerCase().includes('ok') || action.toLowerCase().includes('yes') || action.toLowerCase().includes('tick')) {
                                 status = 'Sent/Confirmed';
                                 statusColor = 'bg-green-100 text-green-700';
                             } else if (action.toLowerCase().includes('block') || action.toLowerCase().includes('cancel')) {
@@ -331,34 +324,34 @@
                             const attachments = logData.Attachments || [];
                             const attachmentText = attachments.length > 0 ? `${attachments.length} file(s)` : 'None';
                             const attachmentColor = attachments.length > 0 ? 'text-blue-600' : 'text-gray-400';
+                            const attachmentNames = attachments.map(a => a.Name).join(', ');
 
-                            // Extract DLP Details for expandable row
-                            let dlpDetails = '';
+                            // DLP Details
+                            let dlpDetails = [];
                             if (logData.PromptOutputs && logData.PromptOutputs.length > 0) {
-                                const outputs = logData.PromptOutputs;
-                                outputs.forEach(out => {
+                                logData.PromptOutputs.forEach(out => {
                                     if (out.ConditionResults) {
                                         out.ConditionResults.forEach(cond => {
                                             if (cond.ConditionContentFounds) {
                                                 cond.ConditionContentFounds.forEach(found => {
-                                                    dlpDetails += `Found "${found.Word}" in ${found.Where}. `;
+                                                    dlpDetails.push(`<strong>Match:</strong> "${found.Word}" in <em>${found.Where}</em> (Qty: ${found.Qty})`);
                                                 });
                                             }
                                         });
                                     }
                                 });
                             }
-                            if (!dlpDetails) dlpDetails = 'No specific DLP matches recorded.';
+                            if (dlpDetails.length === 0) dlpDetails.push('No specific DLP matches recorded.');
 
-                            // Determine if it's a DLP rule or SendConfirm
+                            // Rule Type
                             let ruleType = 'SendConfirm';
                             if (policy.toLowerCase().includes('dlp') || policy.toLowerCase().includes('data loss')) {
-                                ruleType = 'Rule 1'; // Simple mapping for prototype
+                                ruleType = 'Rule 1';
                             } else if (policy.toLowerCase().includes('trigger')) {
                                 ruleType = 'Rule 2';
                             }
 
-                            // Count external recipients
+                            // External Recipients
                             const internalDomains = ['standss.com', 'shivneel.onmicrosoft.com'];
                             const externalCount = allRecipients.filter(addr => {
                                 const domain = addr.split('@')[1];
@@ -369,6 +362,9 @@
                                 id: row.RowKey || Math.random().toString(),
                                 timestamp: utcTime,
                                 user: userEmail,
+                                client: client,
+                                computerName: computerName,
+                                typeItem: typeItem,
                                 recipient: recipientDisplay,
                                 recipientCount: logData.RecipientCount || allRecipients.length,
                                 externalCount: externalCount,
@@ -378,17 +374,16 @@
                                 status: status,
                                 statusColor: statusColor,
                                 attachments: attachmentText,
+                                attachmentNames: attachmentNames,
                                 attachmentColor: attachmentColor,
-                                dlpDetails: dlpDetails,
+                                dlpDetails: dlpDetails.join('<br>'),
                                 ruleType: ruleType,
                                 rawLog: logData
                             };
                         });
 
-                        // Sort by timestamp descending
                         allData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                         
-                        // Show Dashboard
                         document.getElementById('emptyState').classList.add('hidden');
                         document.getElementById('dashboardContent').classList.remove('hidden');
                         document.getElementById('dataStatus').innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full"></span> Data Loaded';
@@ -408,21 +403,15 @@
         // --- Data Filtering & Pagination ---
         function applyFilters() {
             filteredData = allData.filter(row => {
-                // Date Range Filter
                 if (dateRange.start && dateRange.end) {
                     const rowDate = new Date(row.timestamp);
                     if (rowDate < dateRange.start || rowDate > dateRange.end) return false;
                 }
-
-                // Tab Filter
                 if (currentFilter !== 'all' && row.ruleType !== currentFilter) return false;
-                
-                // Search Filter
                 if (searchTerm) {
-                    const searchStr = `${row.user} ${row.recipient} ${row.subject} ${row.policy}`.toLowerCase();
+                    const searchStr = `${row.user} ${row.recipient} ${row.subject} ${row.policy} ${row.client}`.toLowerCase();
                     if (!searchStr.includes(searchTerm)) return false;
                 }
-                
                 return true;
             });
             
@@ -452,8 +441,6 @@
         }
 
         function updateCharts() {
-            // Prepare data for Activity Trend based on filtered data
-            // Group by date
             const dateCounts = {};
             filteredData.forEach(row => {
                 const dateStr = row.timestamp.split('T')[0];
@@ -465,7 +452,6 @@
                 if (row.policy.toLowerCase().includes('confirm')) dateCounts[dateStr].confirm++;
             });
 
-            // Sort dates
             const sortedDates = Object.keys(dateCounts).sort();
             const trendLabels = sortedDates.map(d => {
                 const date = new Date(d);
@@ -475,7 +461,6 @@
             const dlpData = sortedDates.map(d => dateCounts[d].dlp);
             const confirmData = sortedDates.map(d => dateCounts[d].confirm);
 
-            // Activity Trend Chart
             const ctxTrend = document.getElementById('activityTrendChart').getContext('2d');
             if (trendChartInstance) trendChartInstance.destroy();
             
@@ -497,7 +482,6 @@
                 }
             });
 
-            // Actions Breakdown Chart
             const ctxBreakdown = document.getElementById('actionsBreakdownChart').getContext('2d');
             if (breakdownChartInstance) breakdownChartInstance.destroy();
             
@@ -531,7 +515,6 @@
 
             document.getElementById('totalActionsChart').textContent = totalActions;
 
-            // Update Legend
             const legendContainer = document.getElementById('legendContainer');
             legendContainer.innerHTML = '';
             const totalSum = chartData.reduce((a, b) => a + b, 0);
@@ -555,7 +538,7 @@
             tableBody.innerHTML = '';
 
             if (filteredData.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">No records found matching your criteria.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="9" class="px-4 py-8 text-center text-gray-500">No records found matching your criteria.</td></tr>`;
                 document.getElementById('paginationInfo').textContent = `Showing 0 to 0 of 0 entries`;
                 document.getElementById('paginationControls').innerHTML = '';
                 return;
@@ -570,32 +553,43 @@
                 tr.className = 'table-row cursor-pointer';
                 tr.onclick = () => toggleRow(row.id);
                 
-                // Format timestamp
                 const dateObj = new Date(row.timestamp);
                 const formattedTime = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
                 tr.innerHTML = `
                     <td class="px-4 py-3 whitespace-nowrap">${formattedTime}</td>
                     <td class="px-4 py-3 font-medium text-gray-900">${row.user}</td>
+                    <td class="px-4 py-3 text-xs text-gray-500">${row.client}</td>
                     <td class="px-4 py-3">${row.recipient}</td>
                     <td class="px-4 py-3 max-w-xs truncate" title="${row.subject}">${row.subject}</td>
-                    <td class="px-4 py-3"><span class="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs">${row.policy}</span></td>
+                    <td class="px-4 py-3"><span class="badge bg-purple-100 text-purple-700">${row.policy}</span></td>
                     <td class="px-4 py-3"><span class="${row.attachmentColor}">${row.attachments}</span></td>
-                    <td class="px-4 py-3"><span class="px-2 py-1 ${row.statusColor} rounded-full text-xs font-medium">${row.status}</span></td>
+                    <td class="px-4 py-3"><span class="badge ${row.statusColor}">${row.status}</span></td>
                     <td class="px-4 py-3"><svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></td>
                 `;
                 tableBody.appendChild(tr);
 
-                // Expandable Row
                 const expandTr = document.createElement('tr');
                 expandTr.id = `row-${row.id}`;
                 expandTr.className = 'expandable-row bg-gray-50';
                 expandTr.innerHTML = `
-                    <td colspan="8" class="px-4 py-3 text-xs text-gray-500 border-b border-gray-200">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div><strong>Action Taken:</strong> ${row.action}</div>
-                            <div><strong>Recipient Count:</strong> ${row.recipientCount} (${row.externalCount} external)</div>
-                            <div class="col-span-2"><strong>DLP Details:</strong> ${row.dlpDetails}</div>
+                    <td colspan="9" class="px-4 py-3 text-xs text-gray-600 border-b border-gray-200">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="space-y-1">
+                                <p><strong>Action Taken:</strong> ${row.action}</p>
+                                <p><strong>Computer Name:</strong> ${row.computerName}</p>
+                                <p><strong>Item Type:</strong> ${row.typeItem}</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p><strong>Recipient Count:</strong> ${row.recipientCount} (${row.externalCount} external)</p>
+                                <p><strong>Attachments:</strong> ${row.attachmentNames || 'None'}</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p><strong>DLP Details:</strong></p>
+                                <div class="text-xs text-gray-500 bg-white p-2 rounded border border-gray-200 max-h-24 overflow-y-auto">
+                                    ${row.dlpDetails}
+                                </div>
+                            </div>
                         </div>
                     </td>
                 `;
@@ -613,7 +607,6 @@
 
             if (totalPages <= 1) return;
 
-            // Previous Button
             const prevBtn = document.createElement('button');
             prevBtn.textContent = 'Previous';
             prevBtn.className = `px-2 py-1 border border-gray-300 rounded hover:bg-gray-50 ${currentPage === 1 ? 'disabled:opacity-50' : ''}`;
@@ -621,7 +614,6 @@
             prevBtn.onclick = () => { currentPage--; updateTable(); };
             paginationControls.appendChild(prevBtn);
 
-            // Page Numbers (Show max 5)
             let startPage = Math.max(1, currentPage - 2);
             let endPage = Math.min(totalPages, startPage + 4);
             if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
@@ -634,7 +626,6 @@
                 paginationControls.appendChild(pageBtn);
             }
 
-            // Next Button
             const nextBtn = document.createElement('button');
             nextBtn.textContent = 'Next';
             nextBtn.className = `px-2 py-1 border border-gray-300 rounded hover:bg-gray-50 ${currentPage === totalPages ? 'disabled:opacity-50' : ''}`;
@@ -655,19 +646,22 @@
                 return;
             }
 
-            const headers = ['Timestamp', 'User', 'Recipient', 'Subject', 'Policy', 'Action', 'Status', 'External Recipients'];
+            const headers = ['Timestamp', 'User', 'Client', 'Recipient', 'Subject', 'Policy', 'Action', 'Status', 'External Recipients', 'Attachments', 'DLP Details'];
             const csvRows = [headers.join(',')];
 
             filteredData.forEach(row => {
                 const values = [
                     row.timestamp,
                     `"${row.user}"`,
+                    `"${row.client}"`,
                     `"${row.recipient}"`,
                     `"${row.subject.replace(/"/g, '""')}"`,
                     `"${row.policy.replace(/"/g, '""')}"`,
                     `"${row.action}"`,
                     `"${row.status}"`,
-                    row.externalCount
+                    row.externalCount,
+                    `"${row.attachmentNames}"`,
+                    `"${row.dlpDetails.replace(/<br>/g, ' | ').replace(/<[^>]*>/g, '')}"`
                 ];
                 csvRows.push(values.join(','));
             });
