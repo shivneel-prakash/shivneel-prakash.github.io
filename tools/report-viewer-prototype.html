@@ -14,6 +14,7 @@
         .expandable-row.active { display: table-row; }
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans p-6">
@@ -29,150 +30,177 @@
                 <p class="text-sm text-gray-500">Activity Dashboard</p>
             </div>
         </div>
-        <div class="flex items-center gap-4 flex-wrap">
+        
+        <div class="flex flex-wrap items-center gap-4">
+            <!-- Date Range Filter -->
+            <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-md border border-gray-200 shadow-sm">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <input type="date" id="startDate" class="text-sm text-gray-700 outline-none bg-transparent">
+                <span class="text-gray-400">-</span>
+                <input type="date" id="endDate" class="text-sm text-gray-700 outline-none bg-transparent">
+                <button id="applyDateBtn" class="ml-2 px-2 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded hover:bg-blue-100">Apply</button>
+            </div>
+
             <!-- CSV Upload -->
             <div class="relative">
-                <input type="file" id="csvFileInput" accept=".csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                <button class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                <input type="file" id="csvFileInput" accept=".csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                <button class="flex items-center gap-2 px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 shadow-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     Upload CSV
                 </button>
             </div>
-            <div id="dataStatus" class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200 flex items-center gap-1">
+
+            <div id="dataStatus" class="hidden text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200 flex items-center gap-1">
                 <span class="w-2 h-2 bg-green-500 rounded-full"></span> Data Loaded
             </div>
         </div>
     </div>
 
-    <!-- KPI Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-        <div class="card flex items-center gap-4">
-            <div class="p-3 bg-blue-100 rounded-full text-blue-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500 font-medium">Users</p>
-                <p class="text-2xl font-bold text-gray-900" id="kpiUsers">0</p>
-            </div>
+    <!-- Empty State (Visible when no data) -->
+    <div id="emptyState" class="flex flex-col items-center justify-center py-20 bg-white rounded-lg shadow-sm border border-dashed border-gray-300">
+        <div class="bg-blue-50 p-4 rounded-full mb-4">
+            <svg class="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
         </div>
-        <div class="card flex items-center gap-4">
-            <div class="p-3 bg-green-100 rounded-full text-green-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500 font-medium">Emails logged</p>
-                <p class="text-2xl font-bold text-gray-900" id="kpiEmails">0</p>
-            </div>
-        </div>
-        <div class="card flex items-center gap-4">
-            <div class="p-3 bg-red-100 rounded-full text-red-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500 font-medium">DLP triggered</p>
-                <p class="text-2xl font-bold text-gray-900" id="kpiDLP">0</p>
-            </div>
-        </div>
-        <div class="card flex items-center gap-4">
-            <div class="p-3 bg-purple-100 rounded-full text-purple-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500 font-medium">Recipient Confirmation</p>
-                <p class="text-2xl font-bold text-gray-900" id="kpiConfirm">0</p>
-            </div>
-        </div>
-        <div class="card flex items-center gap-4">
-            <div class="p-3 bg-teal-100 rounded-full text-teal-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500 font-medium">Total External Recipients</p>
-                <p class="text-2xl font-bold text-gray-900" id="kpiExtRecip">0</p>
-            </div>
-        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-1">No data loaded</h3>
+        <p class="text-sm text-gray-500 mb-4">Upload a CSV file to view the activity dashboard.</p>
+        <button onclick="document.getElementById('csvFileInput').click()" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
+            Select CSV File
+        </button>
     </div>
 
-    <!-- Charts Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <!-- Activity Trend -->
-        <div class="card">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-semibold text-gray-900">Activity Trend</h2>
-                <div class="flex gap-4 text-xs">
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 bg-blue-500 rounded-full"></span> Emails logged</span>
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 bg-red-400 rounded-full"></span> DLP triggered</span>
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 bg-purple-500 rounded-full"></span> Recipient confirmation</span>
+    <!-- Dashboard Content (Hidden until data is loaded) -->
+    <div id="dashboardContent" class="hidden">
+        
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+            <div class="card flex items-center gap-4">
+                <div class="p-3 bg-blue-100 rounded-full text-blue-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Users</p>
+                    <p class="text-2xl font-bold text-gray-900" id="kpiUsers">0</p>
                 </div>
             </div>
-            <div class="h-64">
-                <canvas id="activityTrendChart"></canvas>
+            <div class="card flex items-center gap-4">
+                <div class="p-3 bg-green-100 rounded-full text-green-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Emails logged</p>
+                    <p class="text-2xl font-bold text-gray-900" id="kpiEmails">0</p>
+                </div>
+            </div>
+            <div class="card flex items-center gap-4">
+                <div class="p-3 bg-red-100 rounded-full text-red-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">DLP triggered</p>
+                    <p class="text-2xl font-bold text-gray-900" id="kpiDLP">0</p>
+                </div>
+            </div>
+            <div class="card flex items-center gap-4">
+                <div class="p-3 bg-purple-100 rounded-full text-purple-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Recipient Confirmation</p>
+                    <p class="text-2xl font-bold text-gray-900" id="kpiConfirm">0</p>
+                </div>
+            </div>
+            <div class="card flex items-center gap-4">
+                <div class="p-3 bg-teal-100 rounded-full text-teal-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Total External Recipients</p>
+                    <p class="text-2xl font-bold text-gray-900" id="kpiExtRecip">0</p>
+                </div>
             </div>
         </div>
 
-        <!-- Actions Breakdown -->
-        <div class="card flex flex-col">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Actions Breakdown</h2>
-            <div class="flex items-center justify-center flex-1">
-                <div class="w-48 h-48 relative">
-                    <canvas id="actionsBreakdownChart"></canvas>
-                    <div class="absolute inset-0 flex flex-col items-center justify-center">
-                        <span class="text-xs text-gray-500">Total Actions</span>
-                        <span class="text-2xl font-bold text-gray-900" id="totalActionsChart">0</span>
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Activity Trend -->
+            <div class="card">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">Activity Trend</h2>
+                    <div class="flex gap-4 text-xs">
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-blue-500 rounded-full"></span> Emails logged</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-red-400 rounded-full"></span> DLP triggered</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-purple-500 rounded-full"></span> Recipient confirmation</span>
                     </div>
                 </div>
-                <div class="ml-8 space-y-3" id="legendContainer">
-                    <!-- Legend generated dynamically -->
+                <div class="h-64">
+                    <canvas id="activityTrendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Actions Breakdown -->
+            <div class="card flex flex-col">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Actions Breakdown</h2>
+                <div class="flex items-center justify-center flex-1">
+                    <div class="w-48 h-48 relative">
+                        <canvas id="actionsBreakdownChart"></canvas>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span class="text-xs text-gray-500">Total Actions</span>
+                            <span class="text-2xl font-bold text-gray-900" id="totalActionsChart">0</span>
+                        </div>
+                    </div>
+                    <div class="ml-8 space-y-3" id="legendContainer">
+                        <!-- Legend generated dynamically -->
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Audit Table Section -->
-    <div class="card">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-            <h2 class="text-lg font-semibold text-gray-900">Detailed Activity Log</h2>
-            <div class="flex flex-wrap gap-2" id="tabContainer">
-                <button class="tab-btn px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-md" data-filter="all">All</button>
-                <button class="tab-btn px-3 py-1.5 text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50" data-filter="SendConfirm">SendConfirm</button>
-                <button class="tab-btn px-3 py-1.5 text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50" data-filter="Rule 1">Rule 1</button>
-                <button class="tab-btn px-3 py-1.5 text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50" data-filter="Rule 2">Rule 2</button>
-            </div>
-            <div class="flex gap-2 w-full md:w-auto">
-                <div class="relative flex-1 md:w-64">
-                    <svg class="w-4 h-4 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <input type="text" id="searchInput" placeholder="Search by user, recipient, or subject" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <!-- Audit Table Section -->
+        <div class="card">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                <h2 class="text-lg font-semibold text-gray-900">Detailed Activity Log</h2>
+                <div class="flex flex-wrap gap-2" id="tabContainer">
+                    <button class="tab-btn px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-md" data-filter="all">All</button>
+                    <button class="tab-btn px-3 py-1.5 text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50" data-filter="SendConfirm">SendConfirm</button>
+                    <button class="tab-btn px-3 py-1.5 text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50" data-filter="Rule 1">Rule 1</button>
+                    <button class="tab-btn px-3 py-1.5 text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50" data-filter="Rule 2">Rule 2</button>
                 </div>
-                <button id="exportBtn" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    Export CSV
-                </button>
+                <div class="flex gap-2 w-full md:w-auto">
+                    <div class="relative flex-1 md:w-64">
+                        <svg class="w-4 h-4 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="text" id="searchInput" placeholder="Search by user, recipient, or subject" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <button id="exportBtn" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Export CSV
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-600">
-                <thead class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                    <tr>
-                        <th class="px-4 py-3 font-medium">Timestamp</th>
-                        <th class="px-4 py-3 font-medium">User</th>
-                        <th class="px-4 py-3 font-medium">Recipient</th>
-                        <th class="px-4 py-3 font-medium">Subject</th>
-                        <th class="px-4 py-3 font-medium">Policy Applied</th>
-                        <th class="px-4 py-3 font-medium">Attachments</th>
-                        <th class="px-4 py-3 font-medium">Status</th>
-                        <th class="px-4 py-3 font-medium"></th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody" class="divide-y divide-gray-100">
-                    <!-- Rows generated dynamically -->
-                </tbody>
-            </table>
-        </div>
-        <div class="mt-4 flex justify-between items-center text-sm text-gray-500">
-            <span id="paginationInfo">Showing 0 to 0 of 0 entries</span>
-            <div class="flex gap-1" id="paginationControls">
-                <!-- Pagination generated dynamically -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-gray-600">
+                    <thead class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                        <tr>
+                            <th class="px-4 py-3 font-medium">Timestamp</th>
+                            <th class="px-4 py-3 font-medium">User</th>
+                            <th class="px-4 py-3 font-medium">Recipient</th>
+                            <th class="px-4 py-3 font-medium">Subject</th>
+                            <th class="px-4 py-3 font-medium">Policy Applied</th>
+                            <th class="px-4 py-3 font-medium">Attachments</th>
+                            <th class="px-4 py-3 font-medium">Status</th>
+                            <th class="px-4 py-3 font-medium"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-gray-100">
+                        <!-- Rows generated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 flex justify-between items-center text-sm text-gray-500">
+                <span id="paginationInfo">Showing 0 to 0 of 0 entries</span>
+                <div class="flex gap-1" id="paginationControls">
+                    <!-- Pagination generated dynamically -->
+                </div>
             </div>
         </div>
     </div>
@@ -187,19 +215,18 @@
         let searchTerm = '';
         let trendChartInstance = null;
         let breakdownChartInstance = null;
-
-        // --- Mock CSV Data (Based on your sample) ---
-        const mockCSV = `PartitionKey,RowKey,Logs,Logs@type,UserEmail,UserEmail@type,PolicyTriggered,PolicyTriggered@type,PolicyAction,PolicyAction@type
-2026-05,8219733235490_9ae015d50e1e4715b50c670a752b088d,"{""UTCTime"":""2026-05-31T22:32:44.5096972Z"",""UserComputerTime"":""2026-05-31T22:32:44.5096972Z"",""PromptName"":""Missing Attachments- SendGuard"",""Subject"":""Re: Sales Inquiry"",""ButtonClicked"":""Tick if OK to Send"",""RecipientCount"":3,""Client"":""New Outlook Windows"",""TypeItem"":""Email"",""EmailFrom"":{""Address"":""nanda@standss.com""},""EmailTo"":[{""Address"":""powelln@standss.com""},{""Address"":""prakashs@standss.com""},{""Address"":""husseina@standss.com""}],""EmailCc"":[],""EmailBcc"":[],""PromptSpecialProperties"":{""Encrypt"":false,""SendNow"":false,""EmailNotSent"":[],""EmailSentTypeChanged"":[],""AttachmentsNotSent"":[],""AttachmentsRenamed"":[]},""Others"":null,""ComputerName"":null,""ComputerUser"":""nanda@standss.com"",""Attachments"":[],""PromptOutputs"":[]}",String,nanda@standss.com,String,Missing Attachments- SendGuard,String,Tick if OK to Send,String
-2026-05,8220085744828_d11a6faef7984edc963574fb4ca07f01,"{""UTCTime"":""2026-05-27T20:37:35.171487Z"",""UserComputerTime"":""2026-05-27T20:37:35.171487Z"",""PromptName"":""Data Loss Prevention Policy - (Check for Trigger Words in Subject - SendGuard)"",""Subject"":""whispers in the wind 67264799-adb6-401d-a575-94cc328e1e21"",""ButtonClicked"":""Yes"",""RecipientCount"":4,""Client"":""Outlook on Web"",""TypeItem"":""Email"",""EmailFrom"":{""Address"":""sspltesteventbased@shivneel.onmicrosoft.com""},""EmailTo"":[{""Address"":""yamm@standss.com""}],""EmailCc"":[{""Address"":""StandssTest2024@gmail.com""}],""EmailBcc"":[{""Address"":""standsstest2024@yahoo.com""},{""Address"":""standsstest2024@outlook.com""}],""PromptSpecialProperties"":{""Encrypt"":false,""SendNow"":false,""EmailNotSent"":[],""EmailSentTypeChanged"":[],""AttachmentsNotSent"":[],""AttachmentsRenamed"":[]},""Others"":null,""ComputerName"":null,""ComputerUser"":""sspltesteventbased@shivneel.onmicrosoft.com"",""Attachments"":[],""PromptOutputs"":[{""Rulename"":""Check for Trigger Words in Subject"",""ConditionResults"":[{""ConditionContentFounds"":[{""Qty"":1,""Word"":""whispers in the wind""}],""Where"":""Subject""}]}]}",String,sspltesteventbased@shivneel.onmicrosoft.com,String,Data Loss Prevention Policy - (Check for Trigger Words in Subject - SendGuard),String,Yes,String
-2026-05,8220230471116_40a5b6de81cc4997b9fe70092f13ae7d,"{""UTCTime"":""2026-05-26T04:25:28.8832444Z"",""UserComputerTime"":""2026-05-26T04:25:28.8832445Z"",""PromptName"":""Data Loss Prevention Policy - (Check for Trigger Words in Subject - SendGuard)"",""Subject"":""whispers in the wind a18cc7f9-8415-466c-8c2f-19514a4c9485"",""ButtonClicked"":""Yes"",""RecipientCount"":4,""Client"":""Outlook on Web"",""TypeItem"":""Email"",""EmailFrom"":{""Address"":""sspltesteventbased@shivneel.onmicrosoft.com""},""EmailTo"":[{""Address"":""yamm@standss.com""}],""EmailCc"":[{""Address"":""StandssTest2024@gmail.com""}],""EmailBcc"":[{""Address"":""standsstest2024@yahoo.com""},{""Address"":""standsstest2024@outlook.com""}],""PromptSpecialProperties"":{""Encrypt"":false,""SendNow"":false,""EmailNotSent"":[],""EmailSentTypeChanged"":[],""AttachmentsNotSent"":[],""AttachmentsRenamed"":[]},""Others"":null,""ComputerName"":null,""ComputerUser"":""sspltesteventbased@shivneel.onmicrosoft.com"",""Attachments"":[],""PromptOutputs"":[{""Rulename"":""Check for Trigger Words in Subject"",""ConditionResults"":[{""ConditionContentFounds"":[{""Qty"":1,""Word"":""whispers in the wind""}],""Where"":""Subject""}]}]}",String,sspltesteventbased@shivneel.onmicrosoft.com,String,Data Loss Prevention Policy - (Check for Trigger Words in Subject - SendGuard),String,Yes,String
-2026-05,8220230481735_0fcd9930888245f7bd04fa9c1b6084bb,"{""UTCTime"":""2026-05-26T04:25:18.2647752Z"",""UserComputerTime"":""2026-05-26T04:25:18.2647752Z"",""PromptName"":""Confirm Email Send - SendGuard"",""Subject"":""Re: test"",""ButtonClicked"":""Send"",""RecipientCount"":3,""Client"":""Outlook on Web"",""TypeItem"":""Email"",""EmailFrom"":{""Address"":""nanda@standss.com""},""EmailTo"":[{""Address"":""penjueliw@standss.com""}],""EmailCc"":[{""Address"":""prakashs@standss.com""},{""Address"":""penjueli_wallace@hotmail.com""}],""EmailBcc"":[],""PromptSpecialProperties"":{""Encrypt"":false,""SendNow"":false,""EmailNotSent"":[],""EmailSentTypeChanged"":[],""AttachmentsNotSent"":[],""AttachmentsRenamed"":[]},""Others"":null,""ComputerName"":null,""ComputerUser"":""nanda@standss.com"",""Attachments"":[{""Name"":""2026 Q2 Timeline.docx"",""Source"":""URL"",""CheckedSkipped"":""""}],""PromptOutputs"":[]}",String,nanda@standss.com,String,Confirm Email Send - SendGuard,String,Send,String`;
+        let dateRange = { start: null, end: null };
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Load mock data initially
-            parseCSV(mockCSV);
+            // Set default date range to last 3 months
+            const today = new Date();
+            const threeMonthsAgo = new Date();
+            threeMonthsAgo.setMonth(today.getMonth() - 3);
             
+            document.getElementById('startDate').valueAsDate = threeMonthsAgo;
+            document.getElementById('endDate').valueAsDate = today;
+
             // Event Listeners
             document.getElementById('csvFileInput').addEventListener('change', handleFileUpload);
             document.getElementById('searchInput').addEventListener('input', (e) => {
@@ -208,6 +235,17 @@
                 applyFilters();
             });
             document.getElementById('exportBtn').addEventListener('click', exportToCSV);
+            document.getElementById('applyDateBtn').addEventListener('click', () => {
+                const startVal = document.getElementById('startDate').value;
+                const endVal = document.getElementById('endDate').value;
+                if (startVal && endVal) {
+                    dateRange.start = new Date(startVal);
+                    dateRange.end = new Date(endVal);
+                    // Set end date to end of day
+                    dateRange.end.setHours(23, 59, 59, 999);
+                    applyFilters();
+                }
+            });
             
             // Tab Listeners
             document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -231,6 +269,12 @@
             const file = event.target.files[0];
             if (!file) return;
 
+            // Show loading state (optional, but good UX)
+            const statusDiv = document.getElementById('dataStatus');
+            statusDiv.innerHTML = '<div class="loader"></div> Parsing...';
+            statusDiv.classList.remove('hidden');
+            statusDiv.className = 'text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full border border-blue-200 flex items-center gap-1';
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 const text = e.target.result;
@@ -245,105 +289,118 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    allData = results.data.map(row => {
-                        let logData = {};
-                        try {
-                            // Parse the JSON string in the 'Logs' column
-                            logData = JSON.parse(row.Logs);
-                        } catch (e) {
-                            console.error("Error parsing Logs JSON:", e);
-                        }
+                    try {
+                        allData = results.data.map(row => {
+                            let logData = {};
+                            try {
+                                // Parse the JSON string in the 'Logs' column
+                                logData = JSON.parse(row.Logs);
+                            } catch (e) {
+                                console.error("Error parsing Logs JSON:", e);
+                            }
 
-                        // Extract relevant fields
-                        const utcTime = logData.UTCTime || '';
-                        const userEmail = row.UserEmail || logData.EmailFrom?.Address || 'Unknown';
-                        const subject = logData.Subject || 'No Subject';
-                        const policy = row.PolicyTriggered || logData.PromptName || 'Unknown Policy';
-                        const action = row.PolicyAction || logData.ButtonClicked || 'Unknown';
+                            // Extract relevant fields
+                            const utcTime = logData.UTCTime || '';
+                            const userEmail = row.UserEmail || logData.EmailFrom?.Address || 'Unknown';
+                            const subject = logData.Subject || 'No Subject';
+                            const policy = row.PolicyTriggered || logData.PromptName || 'Unknown Policy';
+                            const action = row.PolicyAction || logData.ButtonClicked || 'Unknown';
+                            
+                            // Determine Recipients
+                            const to = logData.EmailTo || [];
+                            const cc = logData.EmailCc || [];
+                            const bcc = logData.EmailBcc || [];
+                            const allRecipients = [...to, ...cc, ...bcc].map(r => r.Address);
+                            const recipientDisplay = allRecipients.length > 0 ? allRecipients[0] + (allRecipients.length > 1 ? ` +${allRecipients.length - 1}` : '') : 'None';
+                            
+                            // Determine Status based on action
+                            let status = 'Processed';
+                            let statusColor = 'bg-gray-100 text-gray-700';
+                            if (action.toLowerCase().includes('send') || action.toLowerCase().includes('ok') || action.toLowerCase().includes('yes')) {
+                                status = 'Sent/Confirmed';
+                                statusColor = 'bg-green-100 text-green-700';
+                            } else if (action.toLowerCase().includes('block') || action.toLowerCase().includes('cancel')) {
+                                status = 'Blocked';
+                                statusColor = 'bg-red-100 text-red-700';
+                            } else if (action.toLowerCase().includes('warn')) {
+                                status = 'Warned';
+                                statusColor = 'bg-yellow-100 text-yellow-700';
+                            }
+
+                            // Attachments
+                            const attachments = logData.Attachments || [];
+                            const attachmentText = attachments.length > 0 ? `${attachments.length} file(s)` : 'None';
+                            const attachmentColor = attachments.length > 0 ? 'text-blue-600' : 'text-gray-400';
+
+                            // Extract DLP Details for expandable row
+                            let dlpDetails = '';
+                            if (logData.PromptOutputs && logData.PromptOutputs.length > 0) {
+                                const outputs = logData.PromptOutputs;
+                                outputs.forEach(out => {
+                                    if (out.ConditionResults) {
+                                        out.ConditionResults.forEach(cond => {
+                                            if (cond.ConditionContentFounds) {
+                                                cond.ConditionContentFounds.forEach(found => {
+                                                    dlpDetails += `Found "${found.Word}" in ${found.Where}. `;
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                            if (!dlpDetails) dlpDetails = 'No specific DLP matches recorded.';
+
+                            // Determine if it's a DLP rule or SendConfirm
+                            let ruleType = 'SendConfirm';
+                            if (policy.toLowerCase().includes('dlp') || policy.toLowerCase().includes('data loss')) {
+                                ruleType = 'Rule 1'; // Simple mapping for prototype
+                            } else if (policy.toLowerCase().includes('trigger')) {
+                                ruleType = 'Rule 2';
+                            }
+
+                            // Count external recipients
+                            const internalDomains = ['standss.com', 'shivneel.onmicrosoft.com'];
+                            const externalCount = allRecipients.filter(addr => {
+                                const domain = addr.split('@')[1];
+                                return !internalDomains.includes(domain);
+                            }).length;
+
+                            return {
+                                id: row.RowKey || Math.random().toString(),
+                                timestamp: utcTime,
+                                user: userEmail,
+                                recipient: recipientDisplay,
+                                recipientCount: logData.RecipientCount || allRecipients.length,
+                                externalCount: externalCount,
+                                subject: subject,
+                                policy: policy,
+                                action: action,
+                                status: status,
+                                statusColor: statusColor,
+                                attachments: attachmentText,
+                                attachmentColor: attachmentColor,
+                                dlpDetails: dlpDetails,
+                                ruleType: ruleType,
+                                rawLog: logData
+                            };
+                        });
+
+                        // Sort by timestamp descending
+                        allData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                         
-                        // Determine Recipients
-                        const to = logData.EmailTo || [];
-                        const cc = logData.EmailCc || [];
-                        const bcc = logData.EmailBcc || [];
-                        const allRecipients = [...to, ...cc, ...bcc].map(r => r.Address);
-                        const recipientDisplay = allRecipients.length > 0 ? allRecipients[0] + (allRecipients.length > 1 ? ` +${allRecipients.length - 1}` : '') : 'None';
-                        
-                        // Determine Status based on action
-                        let status = 'Processed';
-                        let statusColor = 'bg-gray-100 text-gray-700';
-                        if (action.toLowerCase().includes('send') || action.toLowerCase().includes('ok') || action.toLowerCase().includes('yes')) {
-                            status = 'Sent/Confirmed';
-                            statusColor = 'bg-green-100 text-green-700';
-                        } else if (action.toLowerCase().includes('block') || action.toLowerCase().includes('cancel')) {
-                            status = 'Blocked';
-                            statusColor = 'bg-red-100 text-red-700';
-                        } else if (action.toLowerCase().includes('warn')) {
-                            status = 'Warned';
-                            statusColor = 'bg-yellow-100 text-yellow-700';
-                        }
+                        // Show Dashboard
+                        document.getElementById('emptyState').classList.add('hidden');
+                        document.getElementById('dashboardContent').classList.remove('hidden');
+                        document.getElementById('dataStatus').innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full"></span> Data Loaded';
+                        document.getElementById('dataStatus').className = 'text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200 flex items-center gap-1';
 
-                        // Attachments
-                        const attachments = logData.Attachments || [];
-                        const attachmentText = attachments.length > 0 ? `${attachments.length} file(s)` : 'None';
-                        const attachmentColor = attachments.length > 0 ? 'text-blue-600' : 'text-gray-400';
-
-                        // Extract DLP Details for expandable row
-                        let dlpDetails = '';
-                        if (logData.PromptOutputs && logData.PromptOutputs.length > 0) {
-                            const outputs = logData.PromptOutputs;
-                            outputs.forEach(out => {
-                                if (out.ConditionResults) {
-                                    out.ConditionResults.forEach(cond => {
-                                        if (cond.ConditionContentFounds) {
-                                            cond.ConditionContentFounds.forEach(found => {
-                                                dlpDetails += `Found "${found.Word}" in ${found.Where}. `;
-                                            });
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                        if (!dlpDetails) dlpDetails = 'No specific DLP matches recorded.';
-
-                        // Determine if it's a DLP rule or SendConfirm
-                        let ruleType = 'SendConfirm';
-                        if (policy.toLowerCase().includes('dlp') || policy.toLowerCase().includes('data loss')) {
-                            ruleType = 'Rule 1'; // Simple mapping for prototype
-                        } else if (policy.toLowerCase().includes('trigger')) {
-                            ruleType = 'Rule 2';
-                        }
-
-                        // Count external recipients
-                        const internalDomains = ['standss.com', 'shivneel.onmicrosoft.com'];
-                        const externalCount = allRecipients.filter(addr => {
-                            const domain = addr.split('@')[1];
-                            return !internalDomains.includes(domain);
-                        }).length;
-
-                        return {
-                            id: row.RowKey,
-                            timestamp: utcTime,
-                            user: userEmail,
-                            recipient: recipientDisplay,
-                            recipientCount: logData.RecipientCount || allRecipients.length,
-                            externalCount: externalCount,
-                            subject: subject,
-                            policy: policy,
-                            action: action,
-                            status: status,
-                            statusColor: statusColor,
-                            attachments: attachmentText,
-                            attachmentColor: attachmentColor,
-                            dlpDetails: dlpDetails,
-                            ruleType: ruleType,
-                            rawLog: logData
-                        };
-                    });
-
-                    // Sort by timestamp descending
-                    allData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                    
-                    updateDashboard();
+                        applyFilters();
+                    } catch (error) {
+                        console.error("Error processing CSV:", error);
+                        alert("Error processing CSV. Please ensure the format matches the expected columns.");
+                        document.getElementById('dataStatus').innerHTML = '<span class="w-2 h-2 bg-red-500 rounded-full"></span> Error';
+                        document.getElementById('dataStatus').className = 'text-xs text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200 flex items-center gap-1';
+                    }
                 }
             });
         }
@@ -351,6 +408,12 @@
         // --- Data Filtering & Pagination ---
         function applyFilters() {
             filteredData = allData.filter(row => {
+                // Date Range Filter
+                if (dateRange.start && dateRange.end) {
+                    const rowDate = new Date(row.timestamp);
+                    if (rowDate < dateRange.start || rowDate > dateRange.end) return false;
+                }
+
                 // Tab Filter
                 if (currentFilter !== 'all' && row.ruleType !== currentFilter) return false;
                 
@@ -375,11 +438,11 @@
         }
 
         function updateKPIs() {
-            const uniqueUsers = new Set(allData.map(d => d.user)).size;
-            const totalEmails = allData.length;
-            const dlpTriggered = allData.filter(d => d.policy.toLowerCase().includes('dlp') || d.policy.toLowerCase().includes('data loss')).length;
-            const confirmTriggered = allData.filter(d => d.policy.toLowerCase().includes('confirm')).length;
-            const totalExternal = allData.reduce((sum, d) => sum + d.externalCount, 0);
+            const uniqueUsers = new Set(filteredData.map(d => d.user)).size;
+            const totalEmails = filteredData.length;
+            const dlpTriggered = filteredData.filter(d => d.policy.toLowerCase().includes('dlp') || d.policy.toLowerCase().includes('data loss')).length;
+            const confirmTriggered = filteredData.filter(d => d.policy.toLowerCase().includes('confirm')).length;
+            const totalExternal = filteredData.reduce((sum, d) => sum + d.externalCount, 0);
 
             document.getElementById('kpiUsers').textContent = uniqueUsers;
             document.getElementById('kpiEmails').textContent = totalEmails;
@@ -389,24 +452,28 @@
         }
 
         function updateCharts() {
-            // Prepare data for Activity Trend (last 14 days)
-            const trendLabels = [];
-            const emailsData = [];
-            const dlpData = [];
-            const confirmData = [];
-            
-            // Get last 14 days
-            for (let i = 13; i >= 0; i--) {
-                const date = new Date();
-                date.setDate(date.getDate() - i);
-                const dateStr = date.toISOString().split('T')[0];
-                trendLabels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-                
-                const dayData = allData.filter(d => d.timestamp.startsWith(dateStr));
-                emailsData.push(dayData.length);
-                dlpData.push(dayData.filter(d => d.policy.toLowerCase().includes('dlp') || d.policy.toLowerCase().includes('data loss')).length);
-                confirmData.push(dayData.filter(d => d.policy.toLowerCase().includes('confirm')).length);
-            }
+            // Prepare data for Activity Trend based on filtered data
+            // Group by date
+            const dateCounts = {};
+            filteredData.forEach(row => {
+                const dateStr = row.timestamp.split('T')[0];
+                if (!dateCounts[dateStr]) {
+                    dateCounts[dateStr] = { emails: 0, dlp: 0, confirm: 0 };
+                }
+                dateCounts[dateStr].emails++;
+                if (row.policy.toLowerCase().includes('dlp') || row.policy.toLowerCase().includes('data loss')) dateCounts[dateStr].dlp++;
+                if (row.policy.toLowerCase().includes('confirm')) dateCounts[dateStr].confirm++;
+            });
+
+            // Sort dates
+            const sortedDates = Object.keys(dateCounts).sort();
+            const trendLabels = sortedDates.map(d => {
+                const date = new Date(d);
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            });
+            const emailsData = sortedDates.map(d => dateCounts[d].emails);
+            const dlpData = sortedDates.map(d => dateCounts[d].dlp);
+            const confirmData = sortedDates.map(d => dateCounts[d].confirm);
 
             // Activity Trend Chart
             const ctxTrend = document.getElementById('activityTrendChart').getContext('2d');
@@ -434,12 +501,11 @@
             const ctxBreakdown = document.getElementById('actionsBreakdownChart').getContext('2d');
             if (breakdownChartInstance) breakdownChartInstance.destroy();
             
-            const totalActions = allData.length;
-            const dlpCount = allData.filter(d => d.policy.toLowerCase().includes('dlp') || d.policy.toLowerCase().includes('data loss')).length;
-            const confirmCount = allData.filter(d => d.policy.toLowerCase().includes('confirm')).length;
-            const extRecipCount = allData.reduce((sum, d) => sum + d.externalCount, 0);
+            const totalActions = filteredData.length;
+            const dlpCount = filteredData.filter(d => d.policy.toLowerCase().includes('dlp') || d.policy.toLowerCase().includes('data loss')).length;
+            const confirmCount = filteredData.filter(d => d.policy.toLowerCase().includes('confirm')).length;
+            const extRecipCount = filteredData.reduce((sum, d) => sum + d.externalCount, 0);
             
-            // For donut, we need numbers. We'll use emails, dlp, confirm, external.
             const chartData = [totalActions, dlpCount, confirmCount, extRecipCount];
             const chartLabels = ['Emails logged', 'DLP triggered', 'Recipient confirmation', 'External recipients'];
             const chartColors = ['#3b82f6', '#f87171', '#a855f7', '#14b8a6'];
