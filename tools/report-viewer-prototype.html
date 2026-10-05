@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SendGuard365 - Dynamic Activity Dashboard</title>
+    <title>SendGuard365 - Advanced Activity Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
@@ -16,6 +16,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hidden { display: none !important; }
         .badge { display: inline-flex; align-items: center; padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
+        .chart-container { position: relative; height: 250px; width: 100%; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans p-6">
@@ -28,7 +29,7 @@
             </div>
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">SendGuard365</h1>
-                <p class="text-sm text-gray-500">Activity Dashboard</p>
+                <p class="text-sm text-gray-500">Reports & Activity Dashboard</p>
             </div>
         </div>
         
@@ -121,33 +122,64 @@
             </div>
         </div>
 
-        <!-- Charts Row -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div class="card">
+        <!-- Overview Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Activity Trend -->
+            <div class="card lg:col-span-2">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-semibold text-gray-900">Activity Trend</h2>
+                    <h2 class="text-lg font-semibold text-gray-900">Email Status Trends</h2>
                     <div class="flex gap-4 text-xs">
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-blue-500 rounded-full"></span> Emails logged</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-red-400 rounded-full"></span> DLP triggered</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-purple-500 rounded-full"></span> Recipient confirmation</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-blue-500 rounded-full"></span> Total Logs</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-red-400 rounded-full"></span> DLP Triggered</span>
                     </div>
                 </div>
-                <div class="h-64">
+                <div class="chart-container">
                     <canvas id="activityTrendChart"></canvas>
                 </div>
             </div>
 
+            <!-- Actions Breakdown (Status) -->
             <div class="card flex flex-col">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Actions Breakdown</h2>
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Status Breakdown</h2>
                 <div class="flex items-center justify-center flex-1">
-                    <div class="w-48 h-48 relative">
+                    <div class="w-40 h-40 relative">
                         <canvas id="actionsBreakdownChart"></canvas>
                         <div class="absolute inset-0 flex flex-col items-center justify-center">
-                            <span class="text-xs text-gray-500">Total Actions</span>
-                            <span class="text-2xl font-bold text-gray-900" id="totalActionsChart">0</span>
+                            <span class="text-xs text-gray-500">Total</span>
+                            <span class="text-xl font-bold text-gray-900" id="totalActionsChart">0</span>
                         </div>
                     </div>
-                    <div class="ml-8 space-y-3" id="legendContainer"></div>
+                    <div class="ml-6 space-y-2 text-xs" id="legendContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div class="card">
+                <h2 class="text-sm font-semibold text-gray-900 mb-2">Recipients Distribution</h2>
+                <div class="chart-container h-40">
+                    <canvas id="recipientsChart"></canvas>
+                </div>
+                <div class="mt-2 flex justify-center gap-4 text-xs text-gray-500">
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 bg-blue-500 rounded-full"></span> Internal</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 bg-teal-500 rounded-full"></span> External</span>
+                </div>
+            </div>
+            <div class="card">
+                <h2 class="text-sm font-semibold text-gray-900 mb-2">Email Type</h2>
+                <div class="chart-container h-40">
+                    <canvas id="emailTypeChart"></canvas>
+                </div>
+                <div class="mt-2 flex justify-center gap-4 text-xs text-gray-500">
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 bg-indigo-500 rounded-full"></span> Message</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 bg-pink-500 rounded-full"></span> Appointment</span>
+                </div>
+            </div>
+            <div class="card">
+                <h2 class="text-sm font-semibold text-gray-900 mb-2">Top Policies Triggered</h2>
+                <div class="chart-container h-40">
+                    <canvas id="policyChart"></canvas>
                 </div>
             </div>
         </div>
@@ -156,11 +188,10 @@
         <div class="card">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
                 <h2 class="text-lg font-semibold text-gray-900">Detailed Activity Log</h2>
+                <!-- Dynamic Tabs -->
                 <div class="flex flex-wrap gap-2" id="tabContainer">
                     <button class="tab-btn px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-md" data-filter="all">All</button>
-                    <button class="tab-btn px-3 py-1.5 text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50" data-filter="SendConfirm">SendConfirm</button>
-                    <button class="tab-btn px-3 py-1.5 text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50" data-filter="Rule 1">Rule 1</button>
-                    <button class="tab-btn px-3 py-1.5 text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50" data-filter="Rule 2">Rule 2</button>
+                    <!-- Tabs generated dynamically -->
                 </div>
                 <div class="flex gap-2 w-full md:w-auto">
                     <div class="relative flex-1 md:w-64">
@@ -181,7 +212,7 @@
                             <th class="px-4 py-3 font-medium">Timestamp</th>
                             <th class="px-4 py-3 font-medium">User</th>
                             <th class="px-4 py-3 font-medium">Client</th>
-                            <th class="px-4 py-3 font-medium">Recipient</th>
+                            <th class="px-4 py-3 font-medium">Recipients</th>
                             <th class="px-4 py-3 font-medium">Subject</th>
                             <th class="px-4 py-3 font-medium">Policy Applied</th>
                             <th class="px-4 py-3 font-medium">Attachments</th>
@@ -209,6 +240,9 @@
         let searchTerm = '';
         let trendChartInstance = null;
         let breakdownChartInstance = null;
+        let recipientsChartInstance = null;
+        let emailTypeChartInstance = null;
+        let policyChartInstance = null;
         let dateRange = { start: null, end: null };
 
         // --- Initialization ---
@@ -239,22 +273,6 @@
                     applyFilters();
                 }
             });
-            
-            // Tab Listeners
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    document.querySelectorAll('.tab-btn').forEach(b => {
-                        b.classList.remove('bg-blue-600', 'text-white');
-                        b.classList.add('bg-white', 'text-gray-600', 'border', 'border-gray-300');
-                    });
-                    e.target.classList.remove('bg-white', 'text-gray-600', 'border', 'border-gray-300');
-                    e.target.classList.add('bg-blue-600', 'text-white');
-                    
-                    currentFilter = e.target.dataset.filter;
-                    currentPage = 1;
-                    applyFilters();
-                });
-            });
         });
 
         // --- File Handling ---
@@ -274,6 +292,7 @@
             reader.readAsText(file);
         }
 
+        // --- CSV Parsing & Data Transformation ---
         // --- CSV Parsing & Data Transformation ---
         function parseCSV(csvText) {
             Papa.parse(csvText, {
@@ -326,30 +345,37 @@
                             const attachmentColor = attachments.length > 0 ? 'text-blue-600' : 'text-gray-400';
                             const attachmentNames = attachments.map(a => a.Name).join(', ');
 
-                            // DLP Details
+                            // DLP Details (FIXED FOR UNDEFINED)
                             let dlpDetails = [];
                             if (logData.PromptOutputs && logData.PromptOutputs.length > 0) {
                                 logData.PromptOutputs.forEach(out => {
+                                    // Include Rule Name
+                                    if (out.Rulename) {
+                                        dlpDetails.push(`<div class="font-semibold text-purple-700 mt-1">Rule: ${out.Rulename}</div>`);
+                                    }
                                     if (out.ConditionResults) {
                                         out.ConditionResults.forEach(cond => {
+                                            // Safely handle missing 'Where' field
+                                            let location = cond.Where || 'Content';
+                                            // Clean up "FileName - " prefix for better display
+                                            if (location.startsWith('FileName - ')) {
+                                                location = 'Attachment: ' + location.replace('FileName - ', '');
+                                            } else if (location === 'FileName') {
+                                                location = 'Attachment';
+                                            } else if (location === 'Email') {
+                                                location = 'Email Body';
+                                            }
+
                                             if (cond.ConditionContentFounds) {
                                                 cond.ConditionContentFounds.forEach(found => {
-                                                    dlpDetails.push(`<strong>Match:</strong> "${found.Word}" in <em>${found.Where}</em> (Qty: ${found.Qty})`);
+                                                    dlpDetails.push(`<div>• Match: "<span class="font-mono text-gray-800">${found.Word}</span>" in <span class="font-medium">${location}</span> (Qty: ${found.Qty})</div>`);
                                                 });
                                             }
                                         });
                                     }
                                 });
                             }
-                            if (dlpDetails.length === 0) dlpDetails.push('No specific DLP matches recorded.');
-
-                            // Rule Type
-                            let ruleType = 'SendConfirm';
-                            if (policy.toLowerCase().includes('dlp') || policy.toLowerCase().includes('data loss')) {
-                                ruleType = 'Rule 1';
-                            } else if (policy.toLowerCase().includes('trigger')) {
-                                ruleType = 'Rule 2';
-                            }
+                            if (dlpDetails.length === 0) dlpDetails.push('<div class="text-gray-400 italic">No specific DLP matches recorded.</div>');
 
                             // External Recipients
                             const internalDomains = ['standss.com', 'shivneel.onmicrosoft.com'];
@@ -376,8 +402,8 @@
                                 attachments: attachmentText,
                                 attachmentNames: attachmentNames,
                                 attachmentColor: attachmentColor,
-                                dlpDetails: dlpDetails.join('<br>'),
-                                ruleType: ruleType,
+                                dlpDetails: dlpDetails.join(''), // Using join('') since we added HTML divs
+                                promptName: logData.PromptName || 'Unknown',
                                 rawLog: logData
                             };
                         });
@@ -389,6 +415,7 @@
                         document.getElementById('dataStatus').innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full"></span> Data Loaded';
                         document.getElementById('dataStatus').className = 'text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200 flex items-center gap-1';
 
+                        generateDynamicTabs();
                         applyFilters();
                     } catch (error) {
                         console.error("Error processing CSV:", error);
@@ -400,18 +427,68 @@
             });
         }
 
+        // --- Dynamic Tabs Generation ---
+        function generateDynamicTabs() {
+            const promptNames = new Set();
+            allData.forEach(row => {
+                // Extract short name from PromptName (e.g., "Missing Attachments" from "Missing Attachments- SendGuard")
+                let shortName = row.promptName.replace(' - SendGuard', '').replace('Data Loss Prevention Policy - ', '').trim();
+                if (shortName.length > 25) shortName = shortName.substring(0, 25) + '...';
+                promptNames.add(shortName);
+            });
+
+            const tabContainer = document.getElementById('tabContainer');
+            // Keep the "All" button, remove others
+            tabContainer.innerHTML = '<button class="tab-btn px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-md" data-filter="all">All</button>';
+
+            promptNames.forEach(name => {
+                if (name === 'Unknown') return;
+                const btn = document.createElement('button');
+                btn.className = 'tab-btn px-3 py-1.5 text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50';
+                btn.dataset.filter = name;
+                btn.textContent = name;
+                tabContainer.appendChild(btn);
+            });
+
+            // Re-attach event listeners
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.tab-btn').forEach(b => {
+                        b.classList.remove('bg-blue-600', 'text-white');
+                        b.classList.add('bg-white', 'text-gray-600', 'border', 'border-gray-300');
+                    });
+                    e.target.classList.remove('bg-white', 'text-gray-600', 'border', 'border-gray-300');
+                    e.target.classList.add('bg-blue-600', 'text-white');
+                    
+                    currentFilter = e.target.dataset.filter;
+                    currentPage = 1;
+                    applyFilters();
+                });
+            });
+        }
+
         // --- Data Filtering & Pagination ---
         function applyFilters() {
             filteredData = allData.filter(row => {
+                // Date Filter
                 if (dateRange.start && dateRange.end) {
                     const rowDate = new Date(row.timestamp);
                     if (rowDate < dateRange.start || rowDate > dateRange.end) return false;
                 }
-                if (currentFilter !== 'all' && row.ruleType !== currentFilter) return false;
+
+                // Tab Filter
+                if (currentFilter !== 'all') {
+                    let shortName = row.promptName.replace(' - SendGuard', '').replace('Data Loss Prevention Policy - ', '').trim();
+                    if (shortName.length > 25) shortName = shortName.substring(0, 25) + '...';
+                    if (shortName !== currentFilter) return false;
+                }
+                
+                // Search Filter
                 if (searchTerm) {
                     const searchStr = `${row.user} ${row.recipient} ${row.subject} ${row.policy} ${row.client}`.toLowerCase();
                     if (!searchStr.includes(searchTerm)) return false;
                 }
+                
                 return true;
             });
             
@@ -429,8 +506,8 @@
         function updateKPIs() {
             const uniqueUsers = new Set(filteredData.map(d => d.user)).size;
             const totalEmails = filteredData.length;
-            const dlpTriggered = filteredData.filter(d => d.policy.toLowerCase().includes('dlp') || d.policy.toLowerCase().includes('data loss')).length;
-            const confirmTriggered = filteredData.filter(d => d.policy.toLowerCase().includes('confirm')).length;
+            const dlpTriggered = filteredData.filter(d => d.promptName.toLowerCase().includes('dlp') || d.promptName.toLowerCase().includes('data loss')).length;
+            const confirmTriggered = filteredData.filter(d => d.promptName.toLowerCase().includes('confirm')).length;
             const totalExternal = filteredData.reduce((sum, d) => sum + d.externalCount, 0);
 
             document.getElementById('kpiUsers').textContent = uniqueUsers;
@@ -441,15 +518,15 @@
         }
 
         function updateCharts() {
+            // 1. Activity Trend (Line Chart)
             const dateCounts = {};
             filteredData.forEach(row => {
                 const dateStr = row.timestamp.split('T')[0];
                 if (!dateCounts[dateStr]) {
-                    dateCounts[dateStr] = { emails: 0, dlp: 0, confirm: 0 };
+                    dateCounts[dateStr] = { total: 0, dlp: 0 };
                 }
-                dateCounts[dateStr].emails++;
-                if (row.policy.toLowerCase().includes('dlp') || row.policy.toLowerCase().includes('data loss')) dateCounts[dateStr].dlp++;
-                if (row.policy.toLowerCase().includes('confirm')) dateCounts[dateStr].confirm++;
+                dateCounts[dateStr].total++;
+                if (row.promptName.toLowerCase().includes('dlp') || row.promptName.toLowerCase().includes('data loss')) dateCounts[dateStr].dlp++;
             });
 
             const sortedDates = Object.keys(dateCounts).sort();
@@ -457,21 +534,19 @@
                 const date = new Date(d);
                 return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             });
-            const emailsData = sortedDates.map(d => dateCounts[d].emails);
+            const totalData = sortedDates.map(d => dateCounts[d].total);
             const dlpData = sortedDates.map(d => dateCounts[d].dlp);
-            const confirmData = sortedDates.map(d => dateCounts[d].confirm);
 
             const ctxTrend = document.getElementById('activityTrendChart').getContext('2d');
             if (trendChartInstance) trendChartInstance.destroy();
             
             trendChartInstance = new Chart(ctxTrend, {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels: trendLabels,
                     datasets: [
-                        { label: 'Emails logged', data: emailsData, backgroundColor: '#3b82f6', borderRadius: 4 },
-                        { label: 'DLP triggered', data: dlpData, backgroundColor: '#f87171', borderRadius: 4 },
-                        { label: 'Recipient confirmation', data: confirmData, backgroundColor: '#a855f7', borderRadius: 4 }
+                        { label: 'Total Logs', data: totalData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4 },
+                        { label: 'DLP Triggered', data: dlpData, borderColor: '#f87171', backgroundColor: 'rgba(248, 113, 113, 0.1)', fill: true, tension: 0.4 }
                     ]
                 },
                 options: {
@@ -482,25 +557,31 @@
                 }
             });
 
+            // 2. Status Breakdown (Donut)
+            const statusCounts = {};
+            filteredData.forEach(row => {
+                statusCounts[row.status] = (statusCounts[row.status] || 0) + 1;
+            });
+
+            const statusLabels = Object.keys(statusCounts);
+            const statusData = Object.values(statusCounts);
+            const statusColors = statusLabels.map(label => {
+                if (label === 'Sent/Confirmed') return '#10b981';
+                if (label === 'Blocked') return '#ef4444';
+                if (label === 'Warned') return '#f59e0b';
+                return '#9ca3af';
+            });
+
             const ctxBreakdown = document.getElementById('actionsBreakdownChart').getContext('2d');
             if (breakdownChartInstance) breakdownChartInstance.destroy();
             
-            const totalActions = filteredData.length;
-            const dlpCount = filteredData.filter(d => d.policy.toLowerCase().includes('dlp') || d.policy.toLowerCase().includes('data loss')).length;
-            const confirmCount = filteredData.filter(d => d.policy.toLowerCase().includes('confirm')).length;
-            const extRecipCount = filteredData.reduce((sum, d) => sum + d.externalCount, 0);
-            
-            const chartData = [totalActions, dlpCount, confirmCount, extRecipCount];
-            const chartLabels = ['Emails logged', 'DLP triggered', 'Recipient confirmation', 'External recipients'];
-            const chartColors = ['#3b82f6', '#f87171', '#a855f7', '#14b8a6'];
-
             breakdownChartInstance = new Chart(ctxBreakdown, {
                 type: 'doughnut',
                 data: {
-                    labels: chartLabels,
+                    labels: statusLabels,
                     datasets: [{
-                        data: chartData,
-                        backgroundColor: chartColors,
+                        data: statusData,
+                        backgroundColor: statusColors,
                         borderWidth: 0,
                         hoverOffset: 4
                     }]
@@ -513,23 +594,108 @@
                 }
             });
 
-            document.getElementById('totalActionsChart').textContent = totalActions;
+            document.getElementById('totalActionsChart').textContent = filteredData.length;
 
             const legendContainer = document.getElementById('legendContainer');
             legendContainer.innerHTML = '';
-            const totalSum = chartData.reduce((a, b) => a + b, 0);
-            
-            chartLabels.forEach((label, index) => {
-                const value = chartData[index];
-                const percentage = totalSum > 0 ? ((value / totalSum) * 100).toFixed(1) : 0;
+            statusLabels.forEach((label, index) => {
+                const value = statusData[index];
+                const percentage = filteredData.length > 0 ? ((value / filteredData.length) * 100).toFixed(1) : 0;
                 legendContainer.innerHTML += `
-                    <div class="flex items-center gap-2 text-sm">
-                        <span class="w-3 h-3 rounded-full" style="background-color: ${chartColors[index]}"></span>
-                        <span class="text-gray-600 w-24">${label}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full" style="background-color: ${statusColors[index]}"></span>
+                        <span class="text-gray-600 w-20 truncate">${label}</span>
                         <span class="font-semibold">${value}</span>
                         <span class="text-gray-400 text-xs">${percentage}%</span>
                     </div>
                 `;
+            });
+
+            // 3. Recipients Distribution (Internal vs External)
+            const internalCount = filteredData.reduce((sum, d) => sum + (d.recipientCount - d.externalCount), 0);
+            const externalCount = filteredData.reduce((sum, d) => sum + d.externalCount, 0);
+
+            const ctxRecipients = document.getElementById('recipientsChart').getContext('2d');
+            if (recipientsChartInstance) recipientsChartInstance.destroy();
+            
+            recipientsChartInstance = new Chart(ctxRecipients, {
+                type: 'pie',
+                data: {
+                    labels: ['Internal', 'External'],
+                    datasets: [{
+                        data: [internalCount, externalCount],
+                        backgroundColor: ['#3b82f6', '#14b8a6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // 4. Email Type Distribution
+            const typeCounts = {};
+            filteredData.forEach(row => {
+                typeCounts[row.typeItem] = (typeCounts[row.typeItem] || 0) + 1;
+            });
+
+            const ctxEmailType = document.getElementById('emailTypeChart').getContext('2d');
+            if (emailTypeChartInstance) emailTypeChartInstance.destroy();
+            
+            emailTypeChartInstance = new Chart(ctxEmailType, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(typeCounts),
+                    datasets: [{
+                        data: Object.values(typeCounts),
+                        backgroundColor: ['#6366f1', '#ec4899', '#f59e0b', '#10b981'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // 5. Top Policies Triggered (Horizontal Bar)
+            const policyCounts = {};
+            filteredData.forEach(row => {
+                // Clean up policy name for display
+                let shortPolicy = row.promptName.replace(' - SendGuard', '').replace('Data Loss Prevention Policy - ', '').trim();
+                if (shortPolicy.length > 20) shortPolicy = shortPolicy.substring(0, 20) + '...';
+                policyCounts[shortPolicy] = (policyCounts[shortPolicy] || 0) + 1;
+            });
+
+            // Sort and take top 5
+            const sortedPolicies = Object.entries(policyCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            
+            const ctxPolicy = document.getElementById('policyChart').getContext('2d');
+            if (policyChartInstance) policyChartInstance.destroy();
+            
+            policyChartInstance = new Chart(ctxPolicy, {
+                type: 'bar',
+                data: {
+                    labels: sortedPolicies.map(p => p[0]),
+                    datasets: [{
+                        data: sortedPolicies.map(p => p[1]),
+                        backgroundColor: '#8b5cf6',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, grid: { display: false } },
+                        y: { grid: { display: false } }
+                    }
+                }
             });
         }
 
@@ -569,24 +735,41 @@
                 `;
                 tableBody.appendChild(tr);
 
+                // Expandable Row (Mimics SafeSend Detailed View)
                 const expandTr = document.createElement('tr');
                 expandTr.id = `row-${row.id}`;
                 expandTr.className = 'expandable-row bg-gray-50';
                 expandTr.innerHTML = `
-                    <td colspan="9" class="px-4 py-3 text-xs text-gray-600 border-b border-gray-200">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="space-y-1">
-                                <p><strong>Action Taken:</strong> ${row.action}</p>
+                    <td colspan="9" class="px-4 py-4 text-sm text-gray-600 border-b border-gray-200">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Column 1: Metadata -->
+                            <div class="space-y-3">
+                                <h4 class="font-semibold text-gray-800 border-b pb-1 mb-2">Transaction Details</h4>
+                                <p><strong>Action:</strong> <span class="font-medium">${row.action}</span></p>
                                 <p><strong>Computer Name:</strong> ${row.computerName}</p>
                                 <p><strong>Item Type:</strong> ${row.typeItem}</p>
+                                <p><strong>Client:</strong> ${row.client}</p>
+                                <p><strong>Recipient Count:</strong> ${row.recipientCount} (${row.externalCount} External)</p>
                             </div>
-                            <div class="space-y-1">
-                                <p><strong>Recipient Count:</strong> ${row.recipientCount} (${row.externalCount} external)</p>
-                                <p><strong>Attachments:</strong> ${row.attachmentNames || 'None'}</p>
+                            <!-- Column 2: Attachments & Recipients -->
+                            <div class="space-y-3">
+                                <h4 class="font-semibold text-gray-800 border-b pb-1 mb-2">Recipients & Attachments</h4>
+                                <div class="text-xs bg-white p-2 rounded border border-gray-200 max-h-24 overflow-y-auto">
+                                    <p><strong>Attachments:</strong> ${row.attachmentNames || 'None'}</p>
+                                </div>
+                                <div class="text-xs bg-white p-2 rounded border border-gray-200 max-h-32 overflow-y-auto">
+                                    <p class="font-semibold mb-1">Recipient List (To, CC, BCC):</p>
+                                    <ul class="list-disc pl-4 space-y-0.5">
+                                        ${row.rawLog.EmailTo?.map(r => `<li>To: ${r.Address}</li>`).join('') || ''}
+                                        ${row.rawLog.EmailCc?.map(r => `<li>CC: ${r.Address}</li>`).join('') || ''}
+                                        ${row.rawLog.EmailBcc?.map(r => `<li>BCC: ${r.Address}</li>`).join('') || ''}
+                                    </ul>
+                                </div>
                             </div>
-                            <div class="space-y-1">
-                                <p><strong>DLP Details:</strong></p>
-                                <div class="text-xs text-gray-500 bg-white p-2 rounded border border-gray-200 max-h-24 overflow-y-auto">
+                            <!-- Column 3: DLP Content Scanning Results -->
+                            <div class="space-y-3">
+                                <h4 class="font-semibold text-gray-800 border-b pb-1 mb-2">DLP Content Scanning Results</h4>
+                                <div class="bg-white p-3 rounded border border-gray-200 text-xs space-y-2">
                                     ${row.dlpDetails}
                                 </div>
                             </div>
